@@ -28,13 +28,19 @@ public extension URL {
 	}
 	
 	/** Set extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method. */
-	func setExtendedAttribute(data: Data, forName name: String, followLinks: Bool = true) throws {
+	func setExtendedAttribute(data: Data, forName name: String, followLinks: Bool = true, failIfAlreadyExists: Bool = false, failIfDoesNotExist: Bool = false) throws {
 		guard isFileURL else {throw Err.notFileURL}
 		try withUnsafeFileSystemRepresentation{ fileSystemPath in
 			let result = data.withUnsafeBytes{
-				/* The position argument is only to be used for resource fork attributes and should always be 0 for other xattrs.
-				 * We do not provide the XATTR_CREATE and XATTR_REPLACE options (fail if xattr already exists/does not already exist). */
-				setxattr(/*path: */fileSystemPath, /*name: */name, /*value: */$0.baseAddress, /*size: */data.count, /*position: */0, /*options: */followLinks ? 0 : XATTR_NOFOLLOW)
+				/* The position argument is only to be used for resource fork attributes and should always be 0 for other xattrs. */
+				setxattr(
+					/*path: */fileSystemPath,
+					/*name: */name,
+					/*value: */$0.baseAddress,
+					/*size: */data.count,
+					/*position: */0,
+					/*options: */(followLinks ? 0 : XATTR_NOFOLLOW) | (failIfAlreadyExists ? XATTR_CREATE : 0) | (failIfDoesNotExist ? XATTR_REPLACE : 0)
+				)
 			}
 			guard result == 0 else {throw Err.system(Errno(rawValue: errno))}
 		}
