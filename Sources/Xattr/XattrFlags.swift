@@ -52,7 +52,7 @@ public struct XattrFlags : OptionSet {
 	/**
 	 Declare that the extended property should not be exported; this is deliberately a bit vague,
 	 but this is used by `XATTR_OPERATION_INTENT_SHARE` to indicate not to preserve the xattr. */
-	public var noExport: XattrFlags {XattrFlags(rawValue: XATTR_FLAG_NO_EXPORT)}
+	public static var noExport: XattrFlags {.init(rawValue: XATTR_FLAG_NO_EXPORT)}
 	
 	/**
 	 Declares the extended attribute to be tied to the contents of the file (or vice versa),
@@ -61,16 +61,16 @@ public struct XattrFlags : OptionSet {
 	 
 	 This property causes the EA to be preserved for copy and share, but not for safe save.
 	 (In a safe save, the EA exists on the original, and will not be copied to the new version.) */
-	public var contentDependent: XattrFlags {XattrFlags(rawValue: XATTR_FLAG_CONTENT_DEPENDENT)}
+	public static var contentDependent: XattrFlags {.init(rawValue: XATTR_FLAG_CONTENT_DEPENDENT)}
 	
 	/**
 	 Declares that the extended attribute is never to be copied, for any intention type. */
-	public var neverPreserve: XattrFlags {XattrFlags(rawValue: XATTR_FLAG_NEVER_PRESERVE)}
+	public static var neverPreserve: XattrFlags {.init(rawValue: XATTR_FLAG_NEVER_PRESERVE)}
 	
 	/**
 	 Declares that the extended attribute is to be synced, used by the `XATTR_OPERATION_ITENT_SYNC` intention.
 	 Syncing tends to want to minimize the amount of metadata synced around, hence the default behavior is for the EA NOT to be synced,
 	 even if it would else be preserved for the `XATTR_OPERATION_ITENT_COPY` intention. */
-	public var syncable: XattrFlags {XattrFlags(rawValue: XATTR_FLAG_SYNCABLE)}
+	public static var syncable: XattrFlags {.init(rawValue: XATTR_FLAG_SYNCABLE)}
 	
 }
