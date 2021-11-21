@@ -7,7 +7,7 @@ import System
  * which was found from https://github.com/CleanCocoa/SwiftXattrs/blob/eacefff4bafb94448965149879d3f47265d1a877/SwiftXattrs/Xattrs.swift */
 public extension URL {
 	
-	/** Get extended attribute. */
+	/** Get extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method. */
 	func extendedAttribute(forName name: String, followLinks: Bool = true) throws -> Data {
 		guard isFileURL else {throw Err.notFileURL}
 		let data = try withUnsafeFileSystemRepresentation{ fileSystemPath -> Data in
@@ -27,7 +27,7 @@ public extension URL {
 		return data
 	}
 	
-	/** Set extended attribute. */
+	/** Set extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method. */
 	func setExtendedAttribute(data: Data, forName name: String, followLinks: Bool = true) throws {
 		guard isFileURL else {throw Err.notFileURL}
 		try withUnsafeFileSystemRepresentation{ fileSystemPath in
@@ -40,7 +40,7 @@ public extension URL {
 		}
 	}
 	
-	/** Remove extended attribute. */
+	/** Remove extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method. */
 	func removeExtendedAttribute(forName name: String, followLinks: Bool = true) throws {
 		guard isFileURL else {throw Err.notFileURL}
 		try withUnsafeFileSystemRepresentation{ fileSystemPath in
