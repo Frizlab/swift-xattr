@@ -7,15 +7,21 @@ import System
  * which was found from https://github.com/CleanCocoa/SwiftXattrs/blob/eacefff4bafb94448965149879d3f47265d1a877/SwiftXattrs/Xattrs.swift */
 public extension URL {
 	
-	/** Get extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method. */
-	func extendedAttribute(forName name: String, followLinks: Bool = true) throws -> Data {
+	/**
+	 Get extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method.
+	 
+	 - Note: Unlike `getxattr`, this method returns `nil` if the given xattr name does not exist. */
+	func extendedAttribute(forName name: String, followLinks: Bool = true) throws -> Data? {
 		guard isFileURL else {throw Err.notFileURL}
-		let data = try withUnsafeFileSystemRepresentation{ fileSystemPath -> Data in
+		let data = try withUnsafeFileSystemRepresentation{ fileSystemPath -> Data? in
 			/* Determine attribute size.
 			 * The position argument is only to be used for resource fork attributes and should always be 0 for other xattrs.
 			 * We do not provide the XATTR_SHOWCOMPRESSION option. */
 			let length = getxattr(/*path: */fileSystemPath, /*name: */name, /*value: */nil, /*size: */0, /*position: */0, /*options: */followLinks ? 0 : XATTR_NOFOLLOW)
-			guard length >= 0 else {throw Err.system(Errno(rawValue: errno))}
+			guard length >= 0 else {
+				if errno == ENOATTR {return nil}
+				else                {throw Err.system(Errno(rawValue: errno))}
+			}
 			
 			var data = Data(count: length)
 			let result = data.withUnsafeMutableBytes{ [count = data.count] in
@@ -46,13 +52,18 @@ public extension URL {
 		}
 	}
 	
-	/** Remove extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method. */
+	/**
+	 Remove extended attribute. If you want to use xattr flags, you should apply them to the name of the xattr before calling this method.
+	 
+	 - Note: Unlike `removexattr`, this method does **not** fail if the given xattr name does not exist.*/
 	func removeExtendedAttribute(forName name: String, followLinks: Bool = true) throws {
 		guard isFileURL else {throw Err.notFileURL}
 		try withUnsafeFileSystemRepresentation{ fileSystemPath in
 			/* We do not provide the XATTR_SHOWCOMPRESSION option. */
 			let result = removexattr(/*path: */fileSystemPath, /*name: */name, /*options: */followLinks ? 0 : XATTR_NOFOLLOW)
-			guard result >= 0 else {throw Err.system(Errno(rawValue: errno))}
+			guard result == 0 || errno == ENOATTR else {
+				throw Err.system(Errno(rawValue: errno))
+			}
 		}
 	}
 	
